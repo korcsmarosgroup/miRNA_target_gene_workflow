@@ -9,5 +9,7 @@ BiocManager::install("GEOquery")
 BiocManager::install("affy")
 BiocManager::install("miRLAB")
 BiocManager::install("clusterProfiler")
+BiocManager::install("org.Hs.eg.db")
 
 install.packages("igraph")
+install.packages("ggplot2")
