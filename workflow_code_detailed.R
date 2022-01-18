@@ -44,12 +44,11 @@ head(TargetScanData)
 # We can check the PCT scores. First converting them to numeric values.
 TargetScanData$PCT <-as.numeric(TargetScanData$PCT)
 plot <- qplot (TargetScanData$PCT, 
-        geom = "histogram",
-        xlab = "Target Scan PCT score",
-        ylab = "Count",
-        binwidth = 0.05)
+               geom = "histogram",
+               xlab = "Target Scan PCT score",
+               ylab = "Count",
+               binwidth = 0.05)
 plot + theme_classic() 
-
 #After looking at the PCT scores users need to choose a cut-off. Based on the TargetScan 
 # website it is a trade off between sensitivity and specificty. We suggest using around a 
 # 0.5 cut off for general miRNA predictions. The conserved site filtering and the PCT
@@ -57,6 +56,34 @@ plot + theme_classic()
 
 TS_filtered <- TargetScanData[TargetScanData$PCT > 0.5,]
 dim(TS_filtered)
+
+# TargetScan has also the Biochemistry based predictions. Here the instead of the ctext plus scores are used. 
+# This way every prediction is a predicted site.
+TargetScanSitePredictions<- read.csv("data/Predicted_Targets_Context_Scores.default_predictions.txt", sep="\t")
+dim(TargetScanSitePredictions)
+head(TargetScanSitePredictions)
+TargetScanSitePredictions$weighted.context...score <- as.numeric(TargetScanSitePredictions$weighted.context...score)
+# We have many non-human predictions which we can exclude
+TargetScanSitePredictionsHuman <- TargetScanSitePredictions[TargetScanSitePredictions$Gene.Tax.ID==9606,]
+dim(TargetScanSitePredictionsHuman)
+plot2 <- qplot (TargetScanSitePredictionsHuman$weighted.context...score, 
+               geom = "histogram",
+               xlab = "Weighted context+ score",
+               ylab = "Count",
+               binwidth = 0.05)
+plot2 + theme_classic() 
+# The wheighted context+score tells the biochemical chance of certain miRNA-target gene site to be active. 
+# If it is negative it is better. Here we can use directly the score or the percetiles function. We can chose 
+# example the top 50% of miRNA -target gene peredctions or only certain genes. This is a trade off between 
+# specificity and sesitivity like always. I have schosena  high specificity filter here. (Only the top 5% kept) 
+TS_context_selected <- TargetScanSitePredictionsHuman[TargetScanSitePredictionsHuman$weighted.context...score.percentile>95, ]
+plot3 <- qplot (TS_context_selected$weighted.context...score, 
+                geom = "histogram",
+                xlab = "Weighted context+ score",
+                ylab = "Count",
+                binwidth = 0.05)
+plot3 + theme_classic() 
+dim(TS_context_selected)
 # This results 508 526 interactions. Note theese interactions are not miRNA - TG but miRNA 
 # family target gene itneractions
 
